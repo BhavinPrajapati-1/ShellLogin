@@ -1,3 +1,6 @@
+using System;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
@@ -5,7 +8,11 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using ShellLogin.Helpers;
+using ShellLogin.Models;
+using ShellLogin.Service;
 
 namespace ShellLogin
 {
@@ -18,10 +25,18 @@ namespace ShellLogin
 
         public IConfiguration Configuration { get; }
 
-        // This method gets called by the runtime. Use this method to add services to the container.
+        // add services to the DI container
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddCors();
             services.AddControllers();
+
+            services.AddSwaggerGen();
+
+
+
+            // configure DI for application services
+            services.AddScoped<IUserService, UserService>();
             EnableJWTMechanism(services);
         }
 
@@ -32,7 +47,15 @@ namespace ShellLogin
             {
                 app.UseDeveloperExceptionPage();
             }
+            // Enable middleware to serve generated Swagger as a JSON endpoint.
+            app.UseSwagger();
 
+            // Enable middleware to serve swagger-ui (HTML, JS, CSS, etc.),
+            // specifying the Swagger JSON endpoint.
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
+            });
             app.UseHttpsRedirection();
 
             app.UseRouting();
@@ -47,7 +70,7 @@ namespace ShellLogin
 
         private void EnableJWTMechanism(IServiceCollection services)
         {
-            var JwtSecretKey = "";
+            string JwtSecretKey = Configuration.GetSection("AppSettings").GetSection("secret").Value;
             var encryptionKey = Encoding.ASCII.GetBytes(JwtSecretKey);
 
             services.AddAuthentication(x =>
@@ -66,6 +89,23 @@ namespace ShellLogin
                     ValidateAudience = false
                 };
             });
+        }
+
+
+        private string generateJwtToken(User user)
+        {
+            string JwtSecretKey = Configuration.GetSection("AppSettings").GetSection("secret").Value;
+            var encryptionKey = Encoding.ASCII.GetBytes(JwtSecretKey);
+            // generate token that is valid for 7 days
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(new[] { new Claim("id", user.Id.ToString()) }),
+                Expires = DateTime.UtcNow.AddDays(7),
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(encryptionKey), SecurityAlgorithms.HmacSha256Signature)
+            };
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+            return tokenHandler.WriteToken(token);
         }
     }
 }
