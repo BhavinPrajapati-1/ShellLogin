@@ -5,7 +5,7 @@ namespace ShellLogin.Service
 {
     public interface IUserService
     {
-        AuthenticateResponse Authenticate(LoginModel model);
+        User Authenticate(LoginModel model);
         IEnumerable<User> GetAllUsers();
         User GetById(int id);
     }

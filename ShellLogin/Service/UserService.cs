@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using ShellLogin.Helpers;
 using ShellLogin.Models;
 using System;
 using System.Collections.Generic;
@@ -14,31 +13,20 @@ namespace ShellLogin.Service
     public class UserService : IUserService
     {
         // users hardcoded for simplicity, store in a db with hashed passwords in production applications
-        private List<User> _users = new List<User>
+        private readonly List<User> _users = new List<User>
         {
-            new User { Id = 1, FirstName = "Test1", LastName = "Test1", Username = "test1", Password = "test1" },
-            new User { Id = 2, FirstName = "Test2", LastName = "Test2", Username = "test2", Password = "test2" },
-            new User { Id = 3, FirstName = "Test3", LastName = "Test3", Username = "test3", Password = "test3" }
+            new User { Id = 1, FirstName = "Test1", LastName = "Test1", Username = "test1", DOB="1995/07/15", Email="avbc@bc.com",Role="Nurse", Password = "test1" },
+            new User { Id = 2, FirstName = "Test2", LastName = "Test2", Username = "test2", DOB="1991/01/15", Email="avbc@bc.com",Role="Dentist", Password = "test2" },
+            new User { Id = 3, FirstName = "Test3", LastName = "Test3", Username = "test3", DOB="1999/02/29", Email="avbc@bc.com",Role="Doctor", Password = "test3" }
         };
 
-        private readonly AppSettings _appSettings;
-
-        public UserService(IOptions<AppSettings> appSettings)
+        public UserService()
         {
-            _appSettings = appSettings.Value;
         }
 
-        public AuthenticateResponse Authenticate(LoginModel model)
+        public User Authenticate(LoginModel model)
         {
-            var user = _users.SingleOrDefault(x => x.Username == model.UserName && x.Password == model.Password);
-
-            // return null if user not found
-            if (user == null) return null;
-
-            // authentication successful so generate jwt token
-            var token = generateJwtToken(user);
-
-            return new AuthenticateResponse(user, token);
+            return _users.SingleOrDefault(x => x.Username == model.UserName && x.Password == model.Password);
         }
 
         IEnumerable<User> IUserService.GetAllUsers()
@@ -51,19 +39,5 @@ namespace ShellLogin.Service
             return _users.FirstOrDefault(x => x.Id == id);
         }
 
-        private string generateJwtToken(User user)
-        {
-            // generate token that is valid for 7 days
-            var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.ASCII.GetBytes(_appSettings.Secret);
-            var tokenDescriptor = new SecurityTokenDescriptor
-            {
-                Subject = new ClaimsIdentity(new[] { new Claim("id", user.Id.ToString()) }),
-                Expires = DateTime.UtcNow.AddDays(7),
-                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
-            };
-            var token = tokenHandler.CreateToken(tokenDescriptor);
-            return tokenHandler.WriteToken(token);
-        }
     }
 }

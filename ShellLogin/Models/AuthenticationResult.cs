@@ -10,6 +10,7 @@ namespace ShellLogin.Models
     {
         [JsonProperty("token")]
         public string Token { get; set; }
+
         [JsonProperty("refreshToken")]
         public string RefreshToken { get; set; }
     }
