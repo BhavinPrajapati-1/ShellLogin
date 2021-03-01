@@ -1,19 +1,12 @@
-FOR JWT AUthentication install this pacakges =>
+Quickstart: Protect an ASP.NET Core web API with Microsoft identity platform 
+URL FOR AZURE AD : https://docs.microsoft.com/en-us/azure/active-directory/develop/quickstart-v2-aspnet-core-web-api
+=====================================================================
 
-Microsoft.EntityFrameworkCore.SqlServer
-Microsoft.EntityFrameworkCore.Tools
-Microsoft.IdentityModel.Tokens
-System.IdentityModel.Tokens.Jwt
-Microsoft.AspNetCore.Authentication.JwtBearer
-
-=======================================================
+FOR JWT AUthentication =>
+Add Database and check userinfo and if success then create token.
 
 
-ADD CONTEXT 
-in .NET cli
-dotnet user-secrets set ConnectionStrings.JWTTokenAuth "Data Source=BHAVIN\\SQLEXPRESS;Initial Catalog=JWTTokenBasedAuth;Integrated Security=True"
-dotnet ef dbcontext scaffold Name=ConnectionStrings.JWTTokenAuth Microsoft.EntityFrameworkCore.SqlServer
+FOR ANGUlar AD integration =>
+https://www.c-sharpcorner.com/article/setup-angular-application-to-use-azure-ad-authentication/
 
-OR 
-PM CONSOLE :
-Scaffold-DbContext "Data Source=BHAVIN\\SQLEXPRESS;Initial Catalog=JWTTokenBasedAuth;Integrated Security=True" Microsoft.EntityFrameworkCore.SqlServer -ContextDir DataContext -Context DemoTokenContext -OutputDir DataContext -Force 
+
